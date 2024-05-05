@@ -4,6 +4,10 @@ services:
     build: ./server/nginx
     ports:
       - "80:80"
+    volumes:
+      - ./server/app:/var/www
+      - ./server/nginx/conf.d:/etc/nginx/conf.d
+
   app:
     build:
       context: ./server/app
@@ -11,4 +15,5 @@ services:
     depends_on:
       - web
     volumes:
-      - .env:./server/app/.env
+      - ./server/app:/var/www
+      - ./server/app/.env:/var/www/.env
