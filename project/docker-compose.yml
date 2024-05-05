@@ -1,0 +1,14 @@
+version: "3"
+services:
+  web:
+    build: ./server/nginx
+    ports:
+      - "80:80"
+  app:
+    build:
+      context: ./server/app
+      dockerfile: Dockerfile
+    depends_on:
+      - web
+    volumes:
+      - .env:./server/app/.env
