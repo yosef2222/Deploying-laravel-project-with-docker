@@ -7,6 +7,8 @@ services:
     volumes:
       - ./server/app:/var/www
       - ./server/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - app-network
 
   app:
     build:
@@ -14,6 +16,26 @@ services:
       dockerfile: Dockerfile
     depends_on:
       - web
+      - db
     volumes:
       - ./server/app:/var/www
       - ./server/app/.env:/var/www/.env
+    networks:
+      - app-network
+  db:
+    image: postgres
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: laravel
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: 123
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
