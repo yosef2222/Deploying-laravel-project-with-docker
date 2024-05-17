@@ -1,41 +1,48 @@
-version: "3"
+version: "3.7"
 services:
-  web:
-    build: ./server/nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./server/app:/var/www
-      - ./server/nginx/conf.d:/etc/nginx/conf.d
-    networks:
-      - app-network
+app:
+  build:
+    args:
+      user: User
+      uid: User_id
+    context: ./
+    dockerfile: dockerfile
+  image: travellist
+  container_name: travel-app
+  restart: unless-stopped
+  working_dir: /var/www/
+  volumes:
+    - ./:/var/www
+  networks:
+    - travel
+db:
+  image: mysql:5.7
+  container_name: travellist-db
+  restart: unless-stopped
+  environment:
+    MYSQL_DATABASE: ${DB_DATABASE}
+    MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    MYSQL_PASSWORD: ${DB_PASSWORD}
+    MYSQL_USER: ${DB_USERNAME}
+    SERVICE_TAGS: dev
+    SERVICE_NAME: mysql
+  volumes:
+    - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+  networks:
+    - travel
 
-  app:
-    build:
-      context: ./server/app
-      dockerfile: Dockerfile
-    depends_on:
-      - web
-      - db
-    volumes:
-      - ./server/app:/var/www
-      - ./server/app/.env:/var/www/.env
-    networks:
-      - app-network
-  db:
-    image: postgres
-    volumes:
-      - ./mysql:/var/lib/mysql
-    restart: unless-stopped
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: laravel
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: 123
-    networks:
-      - app-network
+nginx:
+  image: nginx:1.17-alpine
+  container_name: travellist-nginx
+  restart: unless-stopped
+  ports:
+    - 8000:80
+  volumes:
+    - ./:/var/www
+    - ./docker-compose/nginx:/etc/nginx/conf.d
+  networks:
+    - travellist
 
 networks:
-  app-network:
+  travel:
     driver: bridge
